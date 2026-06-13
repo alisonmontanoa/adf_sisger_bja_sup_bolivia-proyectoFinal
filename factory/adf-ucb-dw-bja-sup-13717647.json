@@ -1,0 +1,10 @@
+{
+	"name": "adf-ucb-dw-bja-sup-13717647",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "brazilsouth"
+}
