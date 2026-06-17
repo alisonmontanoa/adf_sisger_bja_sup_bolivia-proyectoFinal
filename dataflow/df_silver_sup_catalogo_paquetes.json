@@ -6,11 +6,71 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronze_sup_catalogo_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_catalogo_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          paquete_id as string,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as string,",
+				"          costo_estimado_bs as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(paquete_id) AS paquete_id,\\n    TRIM(nombre) AS nombre,\\n    TRIM(contenido) AS contenido,\\n    TRIM(peso_estandar_kg) AS peso_estandar_kg,\\n    TRIM(costo_estimado_bs) AS costo_estimado_bs\\nFROM bronze.sup_catalogo_paquetes\\nWHERE paquete_id IS NOT NULL AND TRIM(paquete_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(nombre = initCap(regexReplace(trim(nombre), '\\\\s+', ' ')),",
+				"          contenido = initCap(regexReplace(trim(contenido), '\\\\s+', ' ')),",
+				"          peso_estandar_kg = iifNull(toDecimal(regexReplace(toString(peso_estandar_kg), '[^0-9.]', '')), 0.0),",
+				"          costo_estimado_bs = iifNull(toDecimal(regexReplace(toString(costo_estimado_bs), '[^0-9.]', '')), 0.0)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          paquete_id as string,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as decimal(10,2),",
+				"          costo_estimado_bs as decimal(18,2),",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          paquete_id,",
+				"          nombre,",
+				"          contenido,",
+				"          peso_estandar_kg,",
+				"          costo_estimado_bs",
+				"     )) ~> sink1"
 			]
 		}
 	}

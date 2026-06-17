@@ -6,11 +6,94 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronze_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          peso_nino_kg as string,",
+				"          talla_nino_cm as string,",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(control_pediatrico_id) AS control_pediatrico_id,\\n    TRIM(ci_nino) AS ci_nino,\\n    TRIM(ci_madre) AS ci_madre,\\n    TRIM(establecimiento_id) AS establecimiento_id,\\n    TRIM(nro_control) AS nro_control,\\n    TRIM(fecha_control) AS fecha_control,\\n    TRIM(peso_nino_kg) AS peso_nino_kg,\\n    TRIM(talla_nino_cm) AS talla_nino_cm,\\n    TRIM(vacuna_aplicada) AS vacuna_aplicada,\\n    TRIM(resultado) AS resultado\\nFROM bronze.bja_controles_pediatricos\\nWHERE control_pediatrico_id IS NOT NULL AND TRIM(control_pediatrico_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(nro_control = iifNull(toInteger(nro_control), 0),",
+				"          fecha_control = coalesce(\r",
+				"    toDate(fecha_control, 'yyyy-MM-dd'),\r",
+				"    toDate(fecha_control, 'dd/MM/yyyy'),\r",
+				"    toDate(fecha_control, 'MM-dd-yyyy'),\r",
+				"    toDate(fecha_control, 'yyyy/MM/dd')\r",
+				")\r",
+				",",
+				"          peso_nino_kg = iifNull(toDecimal(regexReplace(toString(peso_nino_kg), '[^0-9.]', '')), 0.0),",
+				"          talla_nino_cm = iifNull(toDecimal(regexReplace(toString(talla_nino_cm), '[^0-9.]', '')), 0.0),",
+				"          vacuna_aplicada = initCap(regexReplace(trim(vacuna_aplicada), '\\\\s+', ' ')),",
+				"          resultado = initCap(trim(resultado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          peso_nino_kg as decimal(10,2),",
+				"          talla_nino_cm as decimal(10,2),",
+				"          vacuna_aplicada as string,",
+				"          resultado as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_pediatrico_id,",
+				"          ci_nino,",
+				"          ci_madre,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          peso_nino_kg,",
+				"          talla_nino_cm,",
+				"          vacuna_aplicada,",
+				"          resultado",
+				"     )) ~> sink1"
 			]
 		}
 	}
