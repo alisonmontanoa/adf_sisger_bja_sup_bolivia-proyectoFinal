@@ -1,0 +1,279 @@
+{
+	"name": "df_gold_dim_tiempo",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_bja_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "source7"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_controles_prenatales_consolidados",
+						"type": "DatasetReference"
+					},
+					"name": "source8"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_tiempo",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "union1"
+				},
+				{
+					"name": "union2"
+				},
+				{
+					"name": "union3"
+				},
+				{
+					"name": "union4"
+				},
+				{
+					"name": "union5"
+				},
+				{
+					"name": "union6"
+				},
+				{
+					"name": "union7"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_inscripcion AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fecha_inscripcion AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fecha_inscripcion) AS dia_semana,\\n    DATENAME(WEEKDAY, fecha_inscripcion) AS nombre_dia,\\n    DAY(fecha_inscripcion) AS dia_mes,\\n    MONTH(fecha_inscripcion) AS mes,\\n    DATENAME(MONTH, fecha_inscripcion) AS nombre_mes,\\n    DATEPART(QUARTER, fecha_inscripcion) AS trimestre,\\n    YEAR(fecha_inscripcion) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fecha_inscripcion) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM silver.sup_inscripciones\\nWHERE fecha_inscripcion IS NOT NULL',",
+				"     format: 'query') ~> source1",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_emision AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fecha_emision AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fecha_emision) AS dia_semana,\\n    DATENAME(WEEKDAY, fecha_emision) AS nombre_dia,\\n    DAY(fecha_emision) AS dia_mes,\\n    MONTH(fecha_emision) AS mes,\\n    DATENAME(MONTH, fecha_emision) AS nombre_mes,\\n    DATEPART(QUARTER, fecha_emision) AS trimestre,\\n    YEAR(fecha_emision) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fecha_emision) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM silver.sup_boletas\\nWHERE fecha_emision IS NOT NULL',",
+				"     format: 'query') ~> source2",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fecha_entrega AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fecha_entrega) AS dia_semana,\\n    DATENAME(WEEKDAY, fecha_entrega) AS nombre_dia,\\n    DAY(fecha_entrega) AS dia_mes,\\n    MONTH(fecha_entrega) AS mes,\\n    DATENAME(MONTH, fecha_entrega) AS nombre_mes,\\n    DATEPART(QUARTER, fecha_entrega) AS trimestre,\\n    YEAR(fecha_entrega) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fecha_entrega) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM silver.sup_entregas\\nWHERE fecha_entrega IS NOT NULL',",
+				"     format: 'query') ~> source3",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_inscripcion AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fecha_inscripcion AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fecha_inscripcion) AS dia_semana,\\n    DATENAME(WEEKDAY, fecha_inscripcion) AS nombre_dia,\\n    DAY(fecha_inscripcion) AS dia_mes,\\n    MONTH(fecha_inscripcion) AS mes,\\n    DATENAME(MONTH, fecha_inscripcion) AS nombre_mes,\\n    DATEPART(QUARTER, fecha_inscripcion) AS trimestre,\\n    YEAR(fecha_inscripcion) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fecha_inscripcion) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM silver.bja_inscripciones\\nWHERE fecha_inscripcion IS NOT NULL',",
+				"     format: 'query') ~> source4",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_parto AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fecha_parto AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fecha_parto) AS dia_semana,\\n    DATENAME(WEEKDAY, fecha_parto) AS nombre_dia,\\n    DAY(fecha_parto) AS dia_mes,\\n    MONTH(fecha_parto) AS mes,\\n    DATENAME(MONTH, fecha_parto) AS nombre_mes,\\n    DATEPART(QUARTER, fecha_parto) AS trimestre,\\n    YEAR(fecha_parto) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fecha_parto) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM silver.bja_partos\\nWHERE fecha_parto IS NOT NULL',",
+				"     format: 'query') ~> source5",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_control AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fecha_control AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fecha_control) AS dia_semana,\\n    DATENAME(WEEKDAY, fecha_control) AS nombre_dia,\\n    DAY(fecha_control) AS dia_mes,\\n    MONTH(fecha_control) AS mes,\\n    DATENAME(MONTH, fecha_control) AS nombre_mes,\\n    DATEPART(QUARTER, fecha_control) AS trimestre,\\n    YEAR(fecha_control) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fecha_control) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM silver.bja_controles_pediatricos\\nWHERE fecha_control IS NOT NULL',",
+				"     format: 'query') ~> source6",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_pago AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fecha_pago AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fecha_pago) AS dia_semana,\\n    DATENAME(WEEKDAY, fecha_pago) AS nombre_dia,\\n    DAY(fecha_pago) AS dia_mes,\\n    MONTH(fecha_pago) AS mes,\\n    DATENAME(MONTH, fecha_pago) AS nombre_mes,\\n    DATEPART(QUARTER, fecha_pago) AS trimestre,\\n    YEAR(fecha_pago) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fecha_pago) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM silver.bja_pagos\\nWHERE fecha_pago IS NOT NULL',",
+				"     format: 'query') ~> source7",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_control AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fecha_control AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fecha_control) AS dia_semana,\\n    DATENAME(WEEKDAY, fecha_control) AS nombre_dia,\\n    DAY(fecha_control) AS dia_mes,\\n    MONTH(fecha_control) AS mes,\\n    DATENAME(MONTH, fecha_control) AS nombre_mes,\\n    DATEPART(QUARTER, fecha_control) AS trimestre,\\n    YEAR(fecha_control) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fecha_control) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM silver.controles_prenatales_consolidados\\nWHERE fecha_control IS NOT NULL',",
+				"     format: 'query') ~> source8",
+				"source1, source2 union(byName: true)~> union1",
+				"union1, source3 union(byName: true)~> union2",
+				"union2, source4 union(byName: true)~> union3",
+				"union3, source5 union(byName: true)~> union4",
+				"union4, source6 union(byName: true)~> union5",
+				"union5, source7 union(byName: true)~> union6",
+				"union6, source8 union(byName: true)~> union7",
+				"union7 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          fecha,",
+				"          dia_semana,",
+				"          nombre_dia,",
+				"          dia_mes,",
+				"          mes,",
+				"          nombre_mes,",
+				"          trimestre,",
+				"          anio",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
