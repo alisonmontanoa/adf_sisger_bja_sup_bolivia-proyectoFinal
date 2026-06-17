@@ -1,0 +1,63 @@
+{
+	"name": "df_gold_dim_programa",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_controles_prenatales_consolidados",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_programa",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          codigo_programa as string,",
+				"          nombre_programa as string,",
+				"          descripcion as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    sistema_origen AS codigo_programa,\\n    CASE \\n        WHEN sistema_origen = \\'SUP\\' THEN \\'Subsidio Universal Prenatal por la Vida\\'\\n        WHEN sistema_origen = \\'BJA\\' THEN \\'Bono Juana Azurduy\\'\\n        ELSE sistema_origen\\n    END AS nombre_programa,\\n    CASE \\n        WHEN sistema_origen = \\'SUP\\' THEN \\'Entrega de paquetes nutricionales a mujeres embarazadas\\'\\n        WHEN sistema_origen = \\'BJA\\' THEN \\'Pago condicionado por controles prenatales, parto y controles pediátricos\\'\\n        ELSE \\'Programa de subsidio nacional\\'\\n    END AS descripcion\\nFROM silver.controles_prenatales_consolidados\\nWHERE sistema_origen IS NOT NULL\\n  AND TRIM(sistema_origen) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          programa_key as integer,",
+				"          codigo_programa as string,",
+				"          nombre_programa as string,",
+				"          descripcion as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          codigo_programa,",
+				"          nombre_programa,",
+				"          descripcion",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
