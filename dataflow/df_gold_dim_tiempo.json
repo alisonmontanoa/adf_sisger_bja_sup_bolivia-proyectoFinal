@@ -94,6 +94,9 @@
 				},
 				{
 					"name": "union7"
+				},
+				{
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -240,7 +243,18 @@
 				"union4, source6 union(byName: true)~> union5",
 				"union5, source7 union(byName: true)~> union6",
 				"union6, source8 union(byName: true)~> union7",
-				"union7 sink(allowSchemaDrift: true,",
+				"union7 aggregate(groupBy(fecha_key,",
+				"          fecha,",
+				"          dia_semana,",
+				"          nombre_dia,",
+				"          dia_mes,",
+				"          mes,",
+				"          nombre_mes,",
+				"          trimestre,",
+				"          anio,",
+				"          es_fin_semana),",
+				"     conteo = count(fecha_key)) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          fecha_key as integer,",
@@ -271,7 +285,8 @@
 				"          mes,",
 				"          nombre_mes,",
 				"          trimestre,",
-				"          anio",
+				"          anio,",
+				"          es_fin_semana",
 				"     )) ~> sink1"
 			]
 		}
