@@ -1,0 +1,37 @@
+{
+	"name": "gold_dim_programa",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_bja_sup",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "programa_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "codigo_programa",
+				"type": "varchar"
+			},
+			{
+				"name": "nombre_programa",
+				"type": "varchar"
+			},
+			{
+				"name": "descripcion",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_programa"
+		}
+	}
+}

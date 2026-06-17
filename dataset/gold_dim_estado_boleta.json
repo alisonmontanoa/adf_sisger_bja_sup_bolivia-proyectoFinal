@@ -1,0 +1,29 @@
+{
+	"name": "gold_dim_estado_boleta",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_bja_sup",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "estado_boleta_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "estado_boleta",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_estado_boleta"
+		}
+	}
+}

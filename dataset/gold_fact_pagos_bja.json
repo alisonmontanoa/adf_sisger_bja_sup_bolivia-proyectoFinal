@@ -1,0 +1,72 @@
+{
+	"name": "gold_fact_pagos_bja",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_bja_sup",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "pago_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "beneficiaria_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "estado_pago_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "programa_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "monto_bs",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "cantidad_pago",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "pago_id",
+				"type": "varchar"
+			},
+			{
+				"name": "concepto_pago",
+				"type": "varchar"
+			},
+			{
+				"name": "canal_pago",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_comprobante",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "fact_pagos_bja"
+		}
+	}
+}

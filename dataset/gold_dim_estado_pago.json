@@ -1,0 +1,29 @@
+{
+	"name": "gold_dim_estado_pago",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_bja_sup",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "estado_pago_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "estado_pago",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_estado_pago"
+		}
+	}
+}
