@@ -6,11 +6,122 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronze_sup_controles",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "bronze_bja_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_controles_prenatales_consolidados",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "union1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          id_control_origen as string,",
+				"          sistema_origen as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    CAST(TRIM(control_id) AS VARCHAR(50)) AS id_control_origen,\\n    CAST(\\'SUP\\' AS VARCHAR(20)) AS sistema_origen,\\n    CAST(TRIM(ci_beneficiaria) AS VARCHAR(50)) AS ci_beneficiaria,\\n    CAST(TRIM(establecimiento_id) AS VARCHAR(50)) AS establecimiento_id,\\n    CAST(TRIM(nro_control) AS VARCHAR(50)) AS nro_control,\\n    CAST(TRIM(fecha_control) AS VARCHAR(50)) AS fecha_control,\\n    CAST(TRIM(semana_gestacion) AS VARCHAR(50)) AS semana_gestacion,\\n    CAST(TRIM(peso_madre_kg) AS VARCHAR(50)) AS peso_madre_kg,\\n    CAST(TRIM(presion_arterial) AS VARCHAR(50)) AS presion_arterial,\\n    CAST(\\'No aplica\\' AS VARCHAR(100)) AS resultado\\nFROM bronze.sup_controles\\nWHERE control_id IS NOT NULL AND TRIM(control_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source(output(",
+				"          id_control_origen as string,",
+				"          sistema_origen as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    CAST(TRIM(control_prenatal_id) AS VARCHAR(50)) AS id_control_origen,\\n    CAST(\\'BJA\\' AS VARCHAR(20)) AS sistema_origen,\\n    CAST(TRIM(ci_beneficiaria) AS VARCHAR(50)) AS ci_beneficiaria,\\n    CAST(TRIM(establecimiento_id) AS VARCHAR(50)) AS establecimiento_id,\\n    CAST(TRIM(nro_control) AS VARCHAR(50)) AS nro_control,\\n    CAST(TRIM(fecha_control) AS VARCHAR(50)) AS fecha_control,\\n    CAST(TRIM(semana_gestacion) AS VARCHAR(50)) AS semana_gestacion,\\n    CAST(TRIM(peso_madre_kg) AS VARCHAR(50)) AS peso_madre_kg,\\n    CAST(TRIM(presion_arterial) AS VARCHAR(50)) AS presion_arterial,\\n    CAST(TRIM(resultado) AS VARCHAR(100)) AS resultado\\nFROM bronze.bja_controles_prenatales\\nWHERE control_prenatal_id IS NOT NULL AND TRIM(control_prenatal_id) <> \\'\\'',",
+				"     format: 'query') ~> source2",
+				"source1, source2 union(byName: true)~> union1",
+				"union1 derive(nro_control = iifNull(toInteger(nro_control), 0),",
+				"          fecha_control = coalesce(\r",
+				"    toDate(fecha_control, 'yyyy-MM-dd'),\r",
+				"    toDate(fecha_control, 'dd/MM/yyyy'),\r",
+				"    toDate(fecha_control, 'MM-dd-yyyy'),\r",
+				"    toDate(fecha_control, 'yyyy/MM/dd')\r",
+				")\r",
+				",",
+				"          semana_gestacion = iifNull(toInteger(semana_gestacion), 0),",
+				"          peso_madre_kg = iifNull(toDecimal(regexReplace(toString(peso_madre_kg), '[^0-9.]', '')), 0.0),",
+				"          presion_arterial = trim(presion_arterial),",
+				"          resultado = iif(isNull(resultado), 'No aplica', initCap(trim(toString(resultado))))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id_control_origen as string,",
+				"          sistema_origen as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(10,2),",
+				"          presion_arterial as string,",
+				"          resultado as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          id_control_origen,",
+				"          sistema_origen,",
+				"          ci_beneficiaria,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          semana_gestacion,",
+				"          peso_madre_kg,",
+				"          presion_arterial,",
+				"          resultado",
+				"     )) ~> sink1"
 			]
 		}
 	}
