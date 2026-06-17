@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_silver_controles_prenatales_consolidados",
+						"referenceName": "df_silver_bja_controles_pediatricos",
 						"type": "DataFlowReference"
 					},
 					"compute": {
