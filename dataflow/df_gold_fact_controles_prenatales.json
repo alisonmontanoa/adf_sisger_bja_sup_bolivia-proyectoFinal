@@ -1,5 +1,5 @@
 {
-	"name": "df_gold_fact_pagos_bja",
+	"name": "df_gold_fact_controles_prenatales",
 	"properties": {
 		"folder": {
 			"name": "gold"
@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "silver_bja_pagos",
+						"referenceName": "silver_controles_prenatales_consolidados",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -30,7 +30,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "gold_dim_estado_pago",
+						"referenceName": "gold_dim_establecimiento",
 						"type": "DatasetReference"
 					},
 					"name": "source4"
@@ -46,7 +46,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "gold_fact_pagos_bja",
+						"referenceName": "gold_fact_controles_prenatales",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -63,10 +63,10 @@
 					"name": "lookup3"
 				},
 				{
-					"name": "derivedColumn1"
+					"name": "lookup4"
 				},
 				{
-					"name": "lookup4"
+					"name": "derivedColumn1"
 				},
 				{
 					"name": "select1"
@@ -74,14 +74,16 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          pago_id as string,",
+				"          id_control_origen as string,",
+				"          sistema_origen as string,",
 				"          ci_beneficiaria as string,",
-				"          concepto_pago as string,",
-				"          monto_bs as decimal(18,2),",
-				"          fecha_pago as date,",
-				"          estado_pago as string,",
-				"          canal_pago as string,",
-				"          nro_comprobante as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(10,2),",
+				"          presion_arterial as string,",
+				"          resultado as string,",
 				"          fecha_carga as timestamp",
 				"     ),",
 				"     allowSchemaDrift: true,",
@@ -124,8 +126,17 @@
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> source3",
 				"source(output(",
-				"          estado_pago_key as integer,",
-				"          estado_pago as string",
+				"          establecimiento_key as integer,",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string,",
+				"          sistema_origen as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -141,7 +152,7 @@
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> source5",
-				"source1, source2 lookup(fecha_pago == fecha,",
+				"source1, source2 lookup(fecha_control == fecha,",
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> lookup1",
@@ -149,44 +160,48 @@
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> lookup2",
-				"lookup2, source4 lookup(source1@estado_pago == source4@estado_pago,",
+				"lookup2, source4 lookup(source1@establecimiento_id == source4@establecimiento_id",
+				"     && source1@sistema_origen == source4@sistema_origen,",
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> lookup3",
-				"lookup3 derive(codigo_programa = 'BJA',",
-				"          cantidad_pago = 1) ~> derivedColumn1",
-				"derivedColumn1, source5 lookup(derivedColumn1@codigo_programa == source5@codigo_programa,",
+				"lookup3, source5 lookup(source4@sistema_origen == codigo_programa,",
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> lookup4",
-				"lookup4 select(mapColumn(",
-				"          pago_id,",
-				"          concepto_pago,",
-				"          monto_bs,",
-				"          canal_pago,",
-				"          nro_comprobante,",
+				"lookup4 derive(cantidad_control = 1) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          id_control_origen,",
+				"          sistema_origen = source1@sistema_origen,",
+				"          nro_control,",
+				"          semana_gestacion,",
+				"          peso_madre_kg,",
+				"          presion_arterial,",
+				"          resultado,",
 				"          fecha_key,",
 				"          beneficiaria_key,",
-				"          estado_pago_key,",
-				"          cantidad_pago,",
-				"          programa_key",
+				"          establecimiento_key,",
+				"          programa_key,",
+				"          cantidad_control",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          pago_key as integer,",
+				"          control_prenatal_key as integer,",
 				"          fecha_key as integer,",
 				"          beneficiaria_key as integer,",
-				"          estado_pago_key as integer,",
+				"          establecimiento_key as integer,",
 				"          programa_key as integer,",
-				"          monto_bs as decimal(18,2),",
-				"          cantidad_pago as integer,",
-				"          pago_id as string,",
-				"          concepto_pago as string,",
-				"          canal_pago as string,",
-				"          nro_comprobante as string",
+				"          nro_control as integer,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(10,2),",
+				"          cantidad_control as integer,",
+				"          control_id_origen as string,",
+				"          sistema_origen as string,",
+				"          presion_arterial as string,",
+				"          resultado as string",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -199,14 +214,16 @@
 				"     mapColumn(",
 				"          fecha_key,",
 				"          beneficiaria_key,",
-				"          estado_pago_key,",
+				"          establecimiento_key,",
 				"          programa_key,",
-				"          monto_bs,",
-				"          cantidad_pago,",
-				"          pago_id,",
-				"          concepto_pago,",
-				"          canal_pago,",
-				"          nro_comprobante",
+				"          nro_control,",
+				"          semana_gestacion,",
+				"          peso_madre_kg,",
+				"          cantidad_control,",
+				"          control_id_origen = id_control_origen,",
+				"          sistema_origen,",
+				"          presion_arterial,",
+				"          resultado",
 				"     )) ~> sink1"
 			]
 		}
